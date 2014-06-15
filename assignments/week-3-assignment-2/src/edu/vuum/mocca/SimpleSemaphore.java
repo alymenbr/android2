@@ -1,8 +1,7 @@
 package edu.vuum.mocca;
 
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @class SimpleSemaphore
@@ -17,18 +16,22 @@ public class SimpleSemaphore {
      * Define a ReentrantLock to protect the critical section.
      */
     // TODO - you fill in here
+	ReentrantLock lock = null;
 
     /**
      * Define a ConditionObject to wait while the number of
      * permits is 0.
      */
     // TODO - you fill in here
+	Condition waitCondition;
+	
 
     /**
      * Define a count of the number of available permits.
      */
     // TODO - you fill in here.  Make sure that this data member will
     // ensure its values aren't cached by multiple Threads..
+	SimpleAtomicLong atomicLong;
 
     /**
      * Constructor initialize the data members.  
@@ -37,6 +40,9 @@ public class SimpleSemaphore {
                             boolean fair)
     { 
         // TODO - you fill in here
+    	atomicLong = new SimpleAtomicLong(permits);
+    	lock = new ReentrantLock(fair);
+    	waitCondition = lock.newCondition();
     }
 
     /**
@@ -45,6 +51,17 @@ public class SimpleSemaphore {
      */
     public void acquire() throws InterruptedException {
         // TODO - you fill in here
+    	try{
+        	lock.lockInterruptibly();
+        	
+        	while(atomicLong.get() == 0)
+        		waitCondition.await();
+        	
+        	atomicLong.decrementAndGet();
+    	}
+    	finally{
+    		lock.unlock();
+    	}
     }
 
     /**
@@ -53,13 +70,37 @@ public class SimpleSemaphore {
      */
     public void acquireUninterruptibly() {
         // TODO - you fill in here
+    	try{
+        	lock.lock();
+        	
+        	while(atomicLong.get() == 0)
+        		waitCondition.await();
+        	
+        	atomicLong.decrementAndGet();
+    	} catch (InterruptedException e) {
+			// Just stop waiting!
+			e.printStackTrace();
+		}
+    	finally{
+    		lock.unlock();
+    	}    	
     }
 
     /**
      * Return one permit to the semaphore.
      */
     void release() {
+    	
         // TODO - you fill in here
+    	try{
+        	lock.lock();    
+        	
+	    	atomicLong.incrementAndGet();
+	    	waitCondition.signal();
+    	}
+    	finally{
+    		lock.unlock();
+    	}  	    	
     }
     
     /**
@@ -67,7 +108,7 @@ public class SimpleSemaphore {
      */
     public int availablePermits(){
     	// TODO - you fill in here
-    	return 0; // You will change this value. 
+    	return (int) atomicLong.get(); // You will change this value. 
     }
 }
 
