@@ -47,6 +47,7 @@ public class AndroidPlatformStrategy extends PlatformStrategy
     {
         /** (Re)initialize the CountDownLatch. */
         // TODO - You fill in here.
+    	mLatch = new CountDownLatch(NUMBER_OF_THREADS);
     }
 
     /** Print the outputString to the display. */
@@ -57,18 +58,43 @@ public class AndroidPlatformStrategy extends PlatformStrategy
          * and appends the outputString to a TextView. 
          */
         // TODO - You fill in here.
+    	Runnable printRunnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mTextViewOutput.append(outputString + "\n");
+			}
+		};
+    	
+    	mActivity.get().runOnUiThread(printRunnable);
     }
 
     /** Indicate that a game thread has finished running. */
     public void done()
     {	
-        // TODO - You fill in here.
+    	Runnable countdownRunnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mLatch.countDown();
+			}
+		};
+    	
+    	mActivity.get().runOnUiThread(countdownRunnable);
     }
 
     /** Barrier that waits for all the game threads to finish. */
     public void awaitDone()
     {
         // TODO - You fill in here.
+    	try {
+			mLatch.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /** 
