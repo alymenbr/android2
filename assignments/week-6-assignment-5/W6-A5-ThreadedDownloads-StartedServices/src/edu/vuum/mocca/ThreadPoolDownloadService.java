@@ -43,6 +43,7 @@ public class ThreadPoolDownloadService extends Service {
     /**
      * Hook method called when the Service is created.
      */
+    @Override
     public void onCreate() {
         // TODO - You fill in here to replace null with a new
         // FixedThreadPool Executor that's configured to use
@@ -80,6 +81,7 @@ public class ThreadPoolDownloadService extends Service {
      * Hook method called when a component calls startService() with
      * the proper Intent.
      */
+    @Override
     public int onStartCommand(final Intent intent,
                               int flags,
                               int startId) {
@@ -89,7 +91,7 @@ public class ThreadPoolDownloadService extends Service {
         // method implementation should forward to the appropriate
         // helper method from the DownloadUtils class that downloads
         // the uri in the intent and returns the file's pathname using
-        // a Messenger that's named "MESSENGER".
+        // a Messenger who's Bundle key is defined by DownloadUtils.MESSENGER_KEY.
 
         Runnable downloadRunnable = null;
 
@@ -107,7 +109,8 @@ public class ThreadPoolDownloadService extends Service {
      * the Service receives informing it to clean up any resources it
      * holds.
      */
-    public void onDestroy() {
+    @Override
+	public void onDestroy() {
     	// Ensure that the threads used by the ThreadPoolExecutor
     	// complete and are reclaimed by the system.
 
@@ -118,7 +121,8 @@ public class ThreadPoolDownloadService extends Service {
      * Return null since this class does not implement a Bound
      * Service.
      */
-    public IBinder onBind (Intent intent) {
+    @Override
+	public IBinder onBind (Intent intent) {
         return null;
     }
 }
